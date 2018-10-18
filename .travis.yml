@@ -12,4 +12,4 @@ script:
   - python app/tests/test_products.py
   - coverage run --source app app/tests/test_products.py
 after_sucess:
-  - coveralls
+  - codeclimate-test-reporter
