@@ -9,6 +9,7 @@ before_script:
   - psql -c 'create database store_manager_test'
 script:
   - python app/tests/test_products.py
+  - pytest app/tests/test_products.py
   - coverage run app/tests/test_products.py
 after_sucess:
   - coveralls
