@@ -1,4 +1,5 @@
 import os
+import unittest
 # keeps track of the commands and how they are called
 from flask_script import Manager
 # MigrateCommand sets of migration commands
@@ -14,6 +15,17 @@ manager = Manager(app)
 
 # add migration commands and start with db
 manager.add_command('db', MigrateCommand)
+
+# defining test command
+
+
+@manager.command
+def test():
+    tests = unittest.TestLoader().discover('./app/tests', pattern='test*.py')
+    result = unittest.TextTestRunner(verbosity=1).run(tests)
+    if result.wasSuccessful():
+        return 0
+    return 1
 
 
 if __name__ == '__main__':

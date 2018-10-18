@@ -1,5 +1,49 @@
 # get the database
 from app import db
+from flask_bcrypt import Bcrypt
+
+
+class User(db.Model):
+    """Represents the User"""
+
+    __tablename__ = 'users'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+    user_name = db.Column(
+        db.String(256),
+        nullable=False,
+        unique=True
+    )
+    password = db.Column(
+        db.String(256),
+        nullable=False
+    )
+    sales = db.relationship(
+        'Sale',
+        order_by='Sale.id'
+    )
+
+    def __init__(self, user_name, password):
+        """Initialize User"""
+        self.user_name = user_name
+        self.password = Bcrypt().generate_password_hash(password).decode()
+
+    def is_password_valid(self, password):
+        """Validate user password"""
+        return Bcrypt().check_password_hash(self.password, password)
+
+    def save(self):
+        """Save user to database"""
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        """Delete this user"""
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Product(db.Model):
@@ -53,12 +97,13 @@ class Product(db.Model):
             self.product_name, self.product_price, self.product_quantity)
 
 
+
 class Sale(db.Model):
     """Represents the products table"""
 
     __tablename__ = "sales"
 
-    # products columns
+    # sales columns
     id = db.Column(
         db.Integer,
         primary_key=True
@@ -76,11 +121,16 @@ class Sale(db.Model):
         db.DateTime,
         default=db.func.current_timestamp()
     )
+    sold_by = db.Column(
+        db.Integer,
+        db.ForeignKey(User.id)
+    )
 
-    def __init__(self, sales_name, sales_price, sales_quantity):
+    def __init__(self, sales_name, sales_price, sales_quantity, sold_by):
         self.sales_name = sales_name
         self.sales_price = sales_price
         self.sales_quantity = sales_quantity
+        self.sold_by = sold_by
 
     def save(self):
         """Save to the database"""
@@ -89,9 +139,9 @@ class Sale(db.Model):
 
     # method to get all products
     @staticmethod
-    def get_all():
-        """Get all sales"""
-        return Sale.query.all()
+    def get_all(user_id):
+        """Get all sales for specific user"""
+        return Sale.query.filter_by(sold_by=user_id)
 
     def delete(self):
         """Delete this product"""
@@ -100,9 +150,10 @@ class Sale(db.Model):
 
     def __repr__(self):
         """Return Current Instance"""
-        return "[Sale: {} - Price {} - Amount {} - Data {}]".format(
+        return "[Sale: {} - Price {} - Amount {} - Data {} - Sold by {}]".format(
             self.sales_name,
             self.sales_price,
             self.sales_quantity,
-            self.sales_date
+            self.sales_date,
+            self.sold_by
         )
