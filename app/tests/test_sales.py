@@ -1,7 +1,6 @@
 import unittest
 import os
 import sys
-import json
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from app import create_app, db
 
@@ -32,6 +31,18 @@ class SalesTestCase(unittest.TestCase):
         # test correct response
         self.assertEqual(response.status_code, 201)
         # test data in response
+        self.assertIn('Sales 1', str(response.data))
+
+    def test_api_can_get_all_sales_orders(self):
+        """Test the GET request"""
+
+        response = self.client().post('/sales/', data=self.sale)
+        # test response status_code
+        self.assertEqual(response.status_code, 201)
+        response = self.client().get('/sales/')
+        # test return status_code\
+        self.assertEqual(response.status_code, 200)
+        # test data
         self.assertIn('Sales 1', str(response.data))
 
 

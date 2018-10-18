@@ -99,4 +99,20 @@ def create_app(config_name):
                 })
                 response.status_code = 201
                 return response
+        else:
+            sales = Sale.get_all()
+            results = []
+
+        for sale in sales:
+            data = {
+                'id': sale.id,
+                'sales_name': sale.sales_name,
+                'sales_price': sale.sales_price,
+                'sales_quantity': sale.sales_quantity,
+                'sales_date': sale.sales_date
+            }
+            results.append(data)
+        response = jsonify(results)
+        response.status_code = 200
+        return response
     return app
