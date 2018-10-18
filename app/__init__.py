@@ -19,26 +19,44 @@ def create_app(config_name):
     # connect to db
     db.init_app(app)
 
-    @app.route('/products/', methods=['POST'])
+    @app.route('/products/', methods=['POST', 'GET'])
     def product():
-        # get products details
-        product_name = str(request.data.get('product_name'))
-        product_price = str(request.data.get('product_price'))
-        product_quantity = str(request.data.get('product_quantity'))
-        if product_name is not None and product_price is not None and product_quantity is not None:
-            productItem = Product(
-                product_name=product_name,
-                product_price=product_price,
-                product_quantity=product_quantity
-            )
-            productItem.save()
-            response = jsonify({
+        if request.method == 'POST':
+            # get products details
+            product_name = str(request.data.get('product_name'))
+            product_price = str(request.data.get('product_price'))
+            product_quantity = str(request.data.get('product_quantity'))
+            if product_name is not None and product_price is not None and product_quantity is not None:
+                productItem = Product(
+                    product_name=product_name,
+                    product_price=product_price,
+                    product_quantity=product_quantity
+                )
+                productItem.save()
+                response = jsonify({
+                    'id': productItem.id,
+                    'product_name': productItem.product_name,
+                    'product_price': productItem.product_price,
+                    'product_quantity': productItem.product_quantity,
+                    'product_entry_date': productItem.product_entry_date
+                })
+                response.status_code = 201
+                return response
+        else:
+            # GET req
+            products = Product.get_all()
+            results = []
+
+        for productItem in products:
+            data = {
                 'id': productItem.id,
                 'product_name': productItem.product_name,
                 'product_price': productItem.product_price,
                 'product_quantity': productItem.product_quantity,
                 'product_entry_date': productItem.product_entry_date
-            })
-            response.status_code = 201
-            return response
+            }
+            results.append(data)
+        response = jsonify(results)
+        response.status_code = 200
+        return response
     return app

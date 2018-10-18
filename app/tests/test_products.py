@@ -27,11 +27,22 @@ class ProductTestCase(unittest.TestCase):
 
     def test_product_creation(self):
         """Test API can create a Product --> [POST] req"""
-        response = self.client().post('/products/', data=self.product)
 
+        response = self.client().post('/products/', data=self.product)
         # test correct response
         self.assertEqual(response.status_code, 201)
         # test data in response
+        self.assertIn('Product 1', str(response.data))
+
+    def test_api_can_get_all_products(self):
+        """TEst the GET request"""
+        response = self.client().post('/products/', data=self.product)
+        # test response status_code
+        self.assertEqual(response.status_code, 201)
+        response = self.client().get('/products/')
+        # test return status_code\
+        self.assertEqual(response.status_code, 200)
+        # test data
         self.assertIn('Product 1', str(response.data))
 
 
