@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-
+import json
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from app import create_app, db
 
@@ -35,7 +35,8 @@ class ProductTestCase(unittest.TestCase):
         self.assertIn('Product 1', str(response.data))
 
     def test_api_can_get_all_products(self):
-        """TEst the GET request"""
+        """Test the GET request"""
+
         response = self.client().post('/products/', data=self.product)
         # test response status_code
         self.assertEqual(response.status_code, 201)
@@ -44,6 +45,21 @@ class ProductTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # test data
         self.assertIn('Product 1', str(response.data))
+
+    def test_api_can_get_specific_product(self):
+        """Test API can GET specific item"""
+
+        response = self.client().post('/products/', data=self.product)
+        # test the return status_code
+        self.assertEqual(response.status_code, 201)
+        response_data = json.loads(
+            response.data.decode('utf-8').replace("'", "\""))
+        result = self.client().get(
+            '/products/{}'.format(response_data['id'])
+        )
+        # status_code
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Product 1', str(result.data))
 
 
 if __name__ == "__main__":

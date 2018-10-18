@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, abort
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 
@@ -57,6 +57,22 @@ def create_app(config_name):
             }
             results.append(data)
         response = jsonify(results)
+        response.status_code = 200
+        return response
+
+    @app.route('/products/<int:id>', methods=['GET'])
+    def product_edit(id, **kwargs):
+        productItem = Product.query.filter_by(id=id).first()
+        if not productItem:
+            abort(401)
+
+        response = jsonify({
+            'id': productItem.id,
+            'product_name': productItem.product_name,
+            'product_price': productItem.product_price,
+            'product_quantity': productItem.product_quantity,
+            'product_entry_date': productItem.product_entry_date
+        })
         response.status_code = 200
         return response
     return app
