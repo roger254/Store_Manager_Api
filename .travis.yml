@@ -2,10 +2,12 @@ language: python
 install:
   - pip install -r requirements.txt
 env:
-   FLASK_ENV='development'
-   DATABASE_URL='postgresql://localhost/store_manager_test'
+  - FLASK_ENV='development'
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database store_manager_test'
 script:
-  - createdb store_manager_test
   - python app/tests/test_products.py
   - coverage run app/tests/test_products.py
 after_sucess:
