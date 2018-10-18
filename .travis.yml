@@ -3,7 +3,7 @@ install:
   - pip install -r requirements.txt
 env:
    FLASK_ENV='development'
-   DB=postegres
+   DATABASE_URL='postgresql://localhost/store_manager_test'
 script:
   - createdb store_manager_test
   - python manage.py db init
