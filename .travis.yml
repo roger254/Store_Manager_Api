@@ -2,6 +2,10 @@ language: python
 install:
   - pip install -r requirements.txt
 script:
+  - createdb store_manager_test
+  - python manage.py db init
+  - python manage.py db migrate
+  - python manage.py db upgrade
   - python app/tests/test_products.py
   - coverage run app/tests/test_products.py
 after_sucess:
