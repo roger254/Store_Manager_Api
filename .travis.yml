@@ -3,13 +3,13 @@ install:
   - pip install -r requirements.txt
 env:
   - FLASK_ENV='testing'
+  - CODECLIMATE_REPO_TOKEN = '480cf55ca141bb9fce2d5e9ebc3e98f69ddf84587bd133352545feaf4445d23e'
 services:
   - postgresql
 before_script:
   - psql -c 'create database store_manager_test'
 script:
   - python app/tests/test_products.py
-  - pytest app/tests/test_products.py
-  - coverage run app/tests/test_products.py
+  - coverage run --source app app/tests/test_products.py
 after_sucess:
   - coveralls
