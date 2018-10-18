@@ -1,0 +1,10 @@
+language: python
+python:
+  -"2.7"
+install:
+  - pip install -r requirements.txt
+script:
+  - python app/tests/test_products.py
+  - coverage run app/tests/test_products.py
+after_sucess:
+  - coveralls
