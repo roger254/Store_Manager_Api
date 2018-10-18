@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+import json
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from app import create_app, db
 
@@ -14,7 +15,7 @@ class SalesTestCase(unittest.TestCase):
         self.app.testing = True
         self.client = self.app.test_client
         self.sale = {
-            'sales_name': 'Sales 1',
+            'sales_name': 'Sale 1',
             'sales_price': 11.0,
             'sales_quantity': 1
         }
@@ -31,7 +32,7 @@ class SalesTestCase(unittest.TestCase):
         # test correct response
         self.assertEqual(response.status_code, 201)
         # test data in response
-        self.assertIn('Sales 1', str(response.data))
+        self.assertIn('Sale 1', str(response.data))
 
     def test_api_can_get_all_sales_orders(self):
         """Test the GET request"""
@@ -44,6 +45,21 @@ class SalesTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # test data
         self.assertIn('Sales 1', str(response.data))
+
+    def test_api_can_get_specific_sale(self):
+        """Test API can GET specific sale"""
+
+        response = self.client().post('/sales/', data=self.sale)
+        # test the return status_code
+        self.assertEqual(response.status_code, 201)
+        response_data = json.loads(
+            response.data.decode('utf-8').replace("'", "\""))
+        result = self.client().get(
+            '/sales/{}'.format(response_data['id'])
+        )
+        # status_code
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Sale 1', str(result.data))
 
 
 if __name__ == "__main__":

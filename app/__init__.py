@@ -64,7 +64,7 @@ def create_app(config_name):
     def product_edit(id, **kwargs):
         productItem = Product.query.filter_by(id=id).first()
         if not productItem:
-            abort(401)
+            abort(404)
 
         response = jsonify({
             'id': productItem.id,
@@ -115,4 +115,21 @@ def create_app(config_name):
         response = jsonify(results)
         response.status_code = 200
         return response
+
+    @app.route('/sales/<int:id>', methods=['GET'])
+    def sales_edit(id, **kwargs):
+        sale = Sale.query.filter_by(id=id).first()
+        if not sale:
+            abort(404)
+
+        response = jsonify({
+            'id': sale.id,
+            'sales_name': sale.sales_name,
+            'sales_price': sale.sales_price,
+            'sales_quantity': sale.sales_quantity,
+            'sales_date': sale.sales_date
+        })
+        response.status_code = 200
+        return response
+
     return app
