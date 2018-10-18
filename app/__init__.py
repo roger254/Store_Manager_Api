@@ -10,7 +10,7 @@ db = SQLAlchemy()
 
 # create the flask app
 def create_app(config_name):
-    from app.api.v1.models import Product
+    from app.api.v1.models import Product, Sale
     app = FlaskAPI(__name__, instance_relative_config=True)
     # load the configs
     app.config.from_object(app_config[config_name])
@@ -75,4 +75,28 @@ def create_app(config_name):
         })
         response.status_code = 200
         return response
+
+    @app.route('/sales/', methods=['POST', 'GET'])
+    def sales():
+        if request.method == 'POST':
+                # get sales details
+            sales_name = str(request.data.get('sales_name'))
+            sales_price = str(request.data.get('sales_price'))
+            sales_quantity = str(request.data.get('sales_quantity'))
+            if sales_name is not None and sales_price is not None and sales_quantity is not None:
+                salesItem = Sale(
+                    sales_name=sales_name,
+                    sales_price=sales_price,
+                    sales_quantity=sales_quantity
+                )
+                salesItem.save()
+                response = jsonify({
+                    'id': salesItem.id,
+                    'sales_name': salesItem.sales_name,
+                    'sales_price': salesItem.sales_price,
+                    'sales_quantity': salesItem.sales_quantity,
+                    'sales_date': salesItem.sales_date
+                })
+                response.status_code = 201
+                return response
     return app
