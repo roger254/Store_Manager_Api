@@ -8,6 +8,5 @@ services:
 before_script:
   - psql -c 'create database store_manager_test'
 script:
-  - python manage.py test
-  - coverage run manage.py.test
+  - coverage run --source app/tests/ manage.py test
   - codeclimate-test-reporter --token 480cf55ca141bb9fce2d5e9ebc3e98f69ddf84587bd133352545feaf4445d23e
