@@ -19,7 +19,12 @@ class UserRegistrationView(MethodView):
                 user_data = request.data
                 user_name = user_data['user_name']
                 password = user_data['password']
-                user = User(user_name=user_name, password=password)
+                user_status = user_data['user_status']
+                user = User(
+                    user_name=user_name,
+                    password=password,
+                    user_status=user_status
+                )
                 # save User
                 user.save()
 

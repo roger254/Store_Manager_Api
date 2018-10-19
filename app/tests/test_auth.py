@@ -15,7 +15,8 @@ class AuthenticationTest(unittest.TestCase):
         self.client = self.app.test_client
         self.user_data = {
             'user_name': 'roger254',
-            'password': 'test123'
+            'password': 'test123',
+            'user_status': 'regular'
         }
 
         with self.app.app_context():

@@ -25,19 +25,31 @@ class SalesTestCase(unittest.TestCase):
             # create tables
             db.create_all()
 
-    def create_user(self, user_name='user1', password='test@123'):
+    def create_user(
+        self,
+        user_name='user1',
+        password='test@123',
+        user_status='regular'
+    ):
         """Create a test user"""
         user_data = {
             'user_name': user_name,
-            'password': password
+            'password': password,
+            'user_status': user_status
         }
         return self.client().post('/auth/register', data=user_data)
 
-    def login_test_user(self, user_name='user1', password='test@123'):
+    def login_test_user(
+        self,
+        user_name='user1',
+        password='test@123',
+        user_status='regular'
+    ):
         """Log in The test user Created"""
         user_data = {
             'user_name': user_name,
-            'password': password
+            'password': password,
+            'user_status': user_status
         }
         return self.client().post('/auth/login', data=user_data)
 

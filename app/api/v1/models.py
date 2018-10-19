@@ -24,14 +24,19 @@ class User(db.Model):
         db.String(256),
         nullable=False
     )
+    user_status = db.Column(
+        db.String(256),
+        nullable=False
+    )
     sales = db.relationship(
         'Sale',
         order_by='Sale.id'
     )
 
-    def __init__(self, user_name, password):
+    def __init__(self, user_name, password, user_status):
         """Initialize User"""
         self.user_name = user_name
+        self.user_status = user_status
         self.password = Bcrypt().generate_password_hash(password).decode()
 
     def is_password_valid(self, password):
@@ -92,16 +97,20 @@ class Product(db.Model):
         primary_key=True
     )
     product_name = db.Column(
-        db.String(255)
+        db.String(255),
+        nullable=False
     )
     product_price = db.Column(
-        db.Float
+        db.Float,
+        nullable=False
     )
     product_quantity = db.Column(
-        db.Integer
+        db.Integer,
+        nullable=False
     )
     product_entry_date = db.Column(
         db.DateTime,
+        nullable=False,
         default=db.func.current_timestamp()
     )
 
