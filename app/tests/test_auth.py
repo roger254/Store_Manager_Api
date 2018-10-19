@@ -56,3 +56,36 @@ class AuthenticationTest(unittest.TestCase):
         result = json.loads(second_result.data.decode())
         self.assertEqual(
             result['message'], "User already exists. Login!")
+
+    def test_user_login(self):
+        """Test User Login"""
+
+        response = self.client().post('/auth/register', data=self.user_data)
+        self.assertEqual(response.status_code, 201)
+        result = self.client().post('/auth/login', data=self.user_data)
+        # Response Code
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue(result['access_token'])
+
+        # Test response message
+        results_in_json = json.loads(result.decode())
+        self.assertEqual(
+            results_in_json['message'], "You've logged in successfully.")
+
+    def test_not_registered_user_login(self):
+        """Test non registered user login"""
+
+        fake_user = {
+            'user_name': 'anonymous',
+            'password': 'hack'
+        }
+        # Login
+        response = self.client().post('/auth/login', data=fake_user)
+
+        # status_code
+        self.assertEqual(response.status_code, 401)
+        # response message
+        response_in_json = json.loads(response.data.decode())
+        self.assertEqual(response_in_json['message'],
+                         "Invalid User, Please try again"
+                         )
