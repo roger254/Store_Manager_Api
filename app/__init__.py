@@ -1,4 +1,4 @@
-from flask import request, jsonify, abort
+from flask import request, jsonify, abort, make_response
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 
@@ -10,7 +10,7 @@ db = SQLAlchemy()
 
 # create the flask app
 def create_app(config_name):
-    from app.api.v1.models import Product, Sale
+    from app.api.v1.models import Product, Sale, User
     app = FlaskAPI(__name__, instance_relative_config=True)
     # load the configs
     app.config.from_object(app_config[config_name])
@@ -21,44 +21,61 @@ def create_app(config_name):
 
     @app.route('/products/', methods=['POST', 'GET'])
     def product():
-        if request.method == 'POST':
-            # get products details
-            product_name = str(request.data.get('product_name'))
-            product_price = str(request.data.get('product_price'))
-            product_quantity = str(request.data.get('product_quantity'))
-            if product_name is not None and product_price is not None and product_quantity is not None:
-                productItem = Product(
-                    product_name=product_name,
-                    product_price=product_price,
-                    product_quantity=product_quantity
-                )
-                productItem.save()
-                response = jsonify({
-                    'id': productItem.id,
-                    'product_name': productItem.product_name,
-                    'product_price': productItem.product_price,
-                    'product_quantity': productItem.product_quantity,
-                    'product_entry_date': productItem.product_entry_date
-                })
-                response.status_code = 201
-                return response
-        else:
-            # GET req
-            products = Product.get_all()
-            results = []
 
-        for productItem in products:
-            data = {
-                'id': productItem.id,
-                'product_name': productItem.product_name,
-                'product_price': productItem.product_price,
-                'product_quantity': productItem.product_quantity,
-                'product_entry_date': productItem.product_entry_date
-            }
-            results.append(data)
-        response = jsonify(results)
-        response.status_code = 200
-        return response
+        # Get the access_token
+        auth_header = request.headers.get('Authorization')
+        access_token = auth_header.split(" ")[1]
+
+        if access_token:
+            # decode user
+            user_id = User.decode_user_token(access_token)
+
+            if not isinstance(user_id, str):
+                if request.method == 'POST':
+                    # get products details
+                    product_name = str(request.data.get('product_name'))
+                    product_price = str(request.data.get('product_price'))
+                    product_quantity = str(
+                        request.data.get('product_quantity'))
+                    if product_name is not None and product_price is not None and product_quantity is not None:
+                        productItem = Product(
+                            product_name=product_name,
+                            product_price=product_price,
+                            product_quantity=product_quantity
+                        )
+                        productItem.save()
+                        response = jsonify({
+                            'id': productItem.id,
+                            'product_name': productItem.product_name,
+                            'product_price': productItem.product_price,
+                            'product_quantity': productItem.product_quantity,
+                            'product_entry_date': productItem.product_entry_date
+                        })
+
+                        return make_response(response), 201
+                else:
+                    # GET req
+                    products = Product.get_all()
+                    results = []
+
+                    for productItem in products:
+                        data = {
+                            'id': productItem.id,
+                            'product_name': productItem.product_name,
+                            'product_price': productItem.product_price,
+                            'product_quantity': productItem.product_quantity,
+                            'product_entry_date': productItem.product_entry_date
+                        }
+                        results.append(data)
+
+                    return make_response(jsonify(results)), 200
+            else:
+                # if user is invalid
+                message = user_id
+                response = {
+                    'message':message
+                }
+                return make_response(jsonify(response)), 401
 
     @app.route('/products/<int:id>', methods=['GET'])
     def product_edit(id, **kwargs):
