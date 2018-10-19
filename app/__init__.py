@@ -107,7 +107,7 @@ def create_app(config_name):
         # Get the access_token
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(' ')[1]
-        print(access_token)
+
         if access_token:
             # decode user
             user_id = User.decode_user_token(access_token)
