@@ -1,6 +1,9 @@
 # get the database
 from app import db
+from flask import current_app
 from flask_bcrypt import Bcrypt
+import jwt
+from datetime import datetime, timedelta
 
 
 class User(db.Model):
@@ -34,6 +37,38 @@ class User(db.Model):
     def is_password_valid(self, password):
         """Validate user password"""
         return Bcrypt().check_password_hash(self.password, password)
+
+    def generate_user_token(self, user_id):
+        """Generates user token"""
+        try:
+            # set up payload with expiration
+            payload = {
+                'exp': datetime.utcnow() + timedelta(minutes=10),
+                'iat': datetime.utcnow(),
+                'sub': user_id
+            }
+            jwt_token = jwt.encode(
+                payload,
+                current_app.config.get('SECRET'),
+                algorithm='HS256'
+
+            )
+            return jwt_token
+        except Exception as e:
+            return str(e)
+
+    @staticmethod
+    def decode_user_token(token):
+        """Decode user token"""
+        try:
+            payload = jwt.decode(token, current_app.config.get('SECRET'))
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            # the token is expired
+            return "Expired token. Please login to get a new token"
+        except jwt.InvalidTokenError:
+            # the token is invalid
+            return "Invalid token. Please register or login"
 
     def save(self):
         """Save user to database"""
@@ -95,7 +130,6 @@ class Product(db.Model):
         """Return Current Instance"""
         return "[Product: {} - Price {} - Amount {}]".format(
             self.product_name, self.product_price, self.product_quantity)
-
 
 
 class Sale(db.Model):

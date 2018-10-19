@@ -132,4 +132,8 @@ def create_app(config_name):
         response.status_code = 200
         return response
 
+    # auth Blueprint
+    from .auth import auth_blueprint
+    app.register_blueprint(auth_blueprint)
+
     return app
