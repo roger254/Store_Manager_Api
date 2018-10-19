@@ -17,7 +17,7 @@ class SalesTestCase(unittest.TestCase):
         self.sale = {
             'sales_name': 'Sale 1',
             'sales_price': 11.0,
-            'sales_quantity': 1,
+            'sales_quantity': 1
         }
 
         # connect app with content
@@ -84,7 +84,7 @@ class SalesTestCase(unittest.TestCase):
         # test return status_code\
         self.assertEqual(response.status_code, 200)
         # test data
-        self.assertIn('Sales 1', str(response.data))
+        self.assertIn('Sale 1', str(response.data))
 
     def test_api_can_get_specific_sale(self):
         """Test API can GET specific sale"""

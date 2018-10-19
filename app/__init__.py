@@ -24,7 +24,7 @@ def create_app(config_name):
 
         # Get the access_token
         auth_header = request.headers.get('Authorization')
-        access_token = auth_header[1]
+        access_token = auth_header.split(' ')[1]
 
         if access_token:
             # decode user
@@ -51,7 +51,6 @@ def create_app(config_name):
                             'product_quantity': productItem.product_quantity,
                             'product_entry_date': productItem.product_entry_date
                         })
-
                         return make_response(response), 201
                 else:
                     # GET req
@@ -80,8 +79,8 @@ def create_app(config_name):
     @app.route('/products/<int:id>', methods=['GET'])
     def product_edit(id, **kwargs):
         auth_header = request.headers.get('Authorization')
-        print(auth_header)
-        access_token = auth_header[1]
+
+        access_token = auth_header.split(" ")[1]
 
         if access_token:
             # decode user
@@ -103,18 +102,19 @@ def create_app(config_name):
                 return make_response(response), 200
 
     @app.route('/sales/', methods=['POST', 'GET'])
-    def sales():
+    def sale():
 
         # Get the access_token
         auth_header = request.headers.get('Authorization')
-        access_token = auth_header[1]
-
+        access_token = auth_header.split(' ')[1]
+        print(access_token)
         if access_token:
             # decode user
             user_id = User.decode_user_token(access_token)
 
             if not isinstance(user_id, str):
                 if request.method == 'POST':
+
                     # get sales details
                     sales_name = str(request.data.get('sales_name'))
                     sales_price = str(request.data.get('sales_price'))
@@ -138,35 +138,34 @@ def create_app(config_name):
 
                         return make_response(response), 201
                 else:
-                    sales = Sale.get_all()
+                    sales = Sale.get_all(user_id)
                     results = []
 
-                for sale in sales:
-                    data = {
-                        'id': sale.id,
-                        'sales_name': sale.sales_name,
-                        'sales_price': sale.sales_price,
-                        'sales_quantity': sale.sales_quantity,
-                        'sales_date': sale.sales_date,
-                        'sold_by': sale.sold_by
-                    }
-                    results.append(data)
+                    for sale in sales:
+                        data = {
+                            'id': sale.id,
+                            'sales_name': sale.sales_name,
+                            'sales_price': sale.sales_price,
+                            'sales_quantity': sale.sales_quantity,
+                            'sales_date': sale.sales_date,
+                            'sold_by': sale.sold_by
+                        }
+                        results.append(data)
 
-                return make_response(jsonify(results)), 200
-        else:
-            message = user_id
-            response = {
-                'message': message
-            }
-            return make_response(jsonify(response)), 401
+                    return make_response(jsonify(results)), 200
+            else:
+                message = user_id
+                response = {
+                    'message': message
+                }
+                return make_response(jsonify(response)), 401
 
     @app.route('/sales/<int:id>', methods=['GET'])
     def sales_edit(id, **kwargs):
 
         # Get the access_token
         auth_header = request.headers.get('Authorization')
-        print(auth_header)
-        access_token = auth_header[1]
+        access_token = auth_header.split(' ')[1]
 
         if access_token:
             # decode user

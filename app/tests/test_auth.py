@@ -64,13 +64,13 @@ class AuthenticationTest(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         result = self.client().post('/auth/login', data=self.user_data)
         # Response Code
-        self.assertEqual(result.status_code, 200)
-        self.assertTrue(result['access_token'])
+        self.assertEqual(result.status_code, 201)
 
         # Test response message
-        results_in_json = json.loads(result.decode())
+        results_in_json = json.loads(result.data.decode())
         self.assertEqual(
             results_in_json['message'], "You've logged in successfully.")
+        self.assertTrue(results_in_json['access_token'])
 
     def test_not_registered_user_login(self):
         """Test non registered user login"""
