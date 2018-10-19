@@ -24,7 +24,7 @@ def create_app(config_name):
 
         # Get the access_token
         auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split(" ")[1]
+        access_token = auth_header[1]
 
         if access_token:
             # decode user
@@ -73,81 +73,120 @@ def create_app(config_name):
                 # if user is invalid
                 message = user_id
                 response = {
-                    'message':message
+                    'message': message
                 }
                 return make_response(jsonify(response)), 401
 
     @app.route('/products/<int:id>', methods=['GET'])
     def product_edit(id, **kwargs):
-        productItem = Product.query.filter_by(id=id).first()
-        if not productItem:
-            abort(404)
+        auth_header = request.headers.get('Authorization')
+        print(auth_header)
+        access_token = auth_header[1]
 
-        response = jsonify({
-            'id': productItem.id,
-            'product_name': productItem.product_name,
-            'product_price': productItem.product_price,
-            'product_quantity': productItem.product_quantity,
-            'product_entry_date': productItem.product_entry_date
-        })
-        response.status_code = 200
-        return response
+        if access_token:
+            # decode user
+            user_id = User.decode_user_token(access_token)
+
+            if not isinstance(user_id, str):
+                productItem = Product.query.filter_by(id=id).first()
+                if not productItem:
+                    abort(404)
+
+                response = jsonify({
+                    'id': productItem.id,
+                    'product_name': productItem.product_name,
+                    'product_price': productItem.product_price,
+                    'product_quantity': productItem.product_quantity,
+                    'product_entry_date': productItem.product_entry_date
+                })
+
+                return make_response(response), 200
 
     @app.route('/sales/', methods=['POST', 'GET'])
     def sales():
-        if request.method == 'POST':
-                # get sales details
-            sales_name = str(request.data.get('sales_name'))
-            sales_price = str(request.data.get('sales_price'))
-            sales_quantity = str(request.data.get('sales_quantity'))
-            if sales_name is not None and sales_price is not None and sales_quantity is not None:
-                salesItem = Sale(
-                    sales_name=sales_name,
-                    sales_price=sales_price,
-                    sales_quantity=sales_quantity
-                )
-                salesItem.save()
-                response = jsonify({
-                    'id': salesItem.id,
-                    'sales_name': salesItem.sales_name,
-                    'sales_price': salesItem.sales_price,
-                    'sales_quantity': salesItem.sales_quantity,
-                    'sales_date': salesItem.sales_date
-                })
-                response.status_code = 201
-                return response
-        else:
-            sales = Sale.get_all()
-            results = []
 
-        for sale in sales:
-            data = {
-                'id': sale.id,
-                'sales_name': sale.sales_name,
-                'sales_price': sale.sales_price,
-                'sales_quantity': sale.sales_quantity,
-                'sales_date': sale.sales_date
+        # Get the access_token
+        auth_header = request.headers.get('Authorization')
+        access_token = auth_header[1]
+
+        if access_token:
+            # decode user
+            user_id = User.decode_user_token(access_token)
+
+            if not isinstance(user_id, str):
+                if request.method == 'POST':
+                    # get sales details
+                    sales_name = str(request.data.get('sales_name'))
+                    sales_price = str(request.data.get('sales_price'))
+                    sales_quantity = str(request.data.get('sales_quantity'))
+                    if sales_name is not None and sales_price is not None and sales_quantity is not None:
+                        salesItem = Sale(
+                            sales_name=sales_name,
+                            sales_price=sales_price,
+                            sales_quantity=sales_quantity,
+                            sold_by=user_id
+                        )
+                        salesItem.save()
+                        response = jsonify({
+                            'id': salesItem.id,
+                            'sales_name': salesItem.sales_name,
+                            'sales_price': salesItem.sales_price,
+                            'sales_quantity': salesItem.sales_quantity,
+                            'sales_date': salesItem.sales_date,
+                            'sold_by': salesItem.sold_by
+                        })
+
+                        return make_response(response), 201
+                else:
+                    sales = Sale.get_all()
+                    results = []
+
+                for sale in sales:
+                    data = {
+                        'id': sale.id,
+                        'sales_name': sale.sales_name,
+                        'sales_price': sale.sales_price,
+                        'sales_quantity': sale.sales_quantity,
+                        'sales_date': sale.sales_date,
+                        'sold_by': sale.sold_by
+                    }
+                    results.append(data)
+
+                return make_response(jsonify(results)), 200
+        else:
+            message = user_id
+            response = {
+                'message': message
             }
-            results.append(data)
-        response = jsonify(results)
-        response.status_code = 200
-        return response
+            return make_response(jsonify(response)), 401
 
     @app.route('/sales/<int:id>', methods=['GET'])
     def sales_edit(id, **kwargs):
-        sale = Sale.query.filter_by(id=id).first()
-        if not sale:
-            abort(404)
 
-        response = jsonify({
-            'id': sale.id,
-            'sales_name': sale.sales_name,
-            'sales_price': sale.sales_price,
-            'sales_quantity': sale.sales_quantity,
-            'sales_date': sale.sales_date
-        })
-        response.status_code = 200
-        return response
+        # Get the access_token
+        auth_header = request.headers.get('Authorization')
+        print(auth_header)
+        access_token = auth_header[1]
+
+        if access_token:
+            # decode user
+            user_id = User.decode_user_token(access_token)
+
+            if not isinstance(user_id, str):
+                sale = Sale.query.filter_by(id=id).first()
+                if not sale:
+                    abort(404)
+
+                response = jsonify({
+                    'id': sale.id,
+                    'sales_name': sale.sales_name,
+                    'sales_price': sale.sales_price,
+                    'sales_quantity': sale.sales_quantity,
+                    'sales_date': sale.sales_date,
+                    'sold_by': sale.sold_by
+                })
+
+                return make_response(response), 200
 
     # auth Blueprint
     from .auth import auth_blueprint

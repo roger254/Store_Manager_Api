@@ -25,10 +25,37 @@ class ProductTestCase(unittest.TestCase):
             # create tables
             db.create_all()
 
+    def create_user(self, user_name='user1', password='test@123'):
+        """Create a test user"""
+        user_data = {
+            'user_name': user_name,
+            'password': password
+        }
+        return self.client().post('/auth/register', data=user_data)
+
+    def login_test_user(self, user_name='user1', password='test@123'):
+        """Log in The test user Created"""
+        user_data = {
+            'user_name': user_name,
+            'password': password
+        }
+        return self.client().post('/auth/login', data=user_data)
+
     def test_product_creation(self):
         """Test API can create a Product --> [POST] req"""
 
-        response = self.client().post('/products/', data=self.product)
+        # register and login user
+        self.create_user()
+        login_response = self.login_test_user()
+        # access_token
+        access_token = json.loads(login_response.data.decode())['access_token']
+
+        # add auth header
+        response = self.client().post(
+            '/products/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.product
+        )
         # test correct response
         self.assertEqual(response.status_code, 201)
         # test data in response
@@ -37,10 +64,23 @@ class ProductTestCase(unittest.TestCase):
     def test_api_can_get_all_products(self):
         """Test the GET request"""
 
-        response = self.client().post('/products/', data=self.product)
+        # register and login user
+        self.create_user()
+        login_response = self.login_test_user()
+        # access_token
+        access_token = json.loads(login_response.data.decode())['access_token']
+
+        response = self.client().post(
+            '/products/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.product
+        )
         # test response status_code
         self.assertEqual(response.status_code, 201)
-        response = self.client().get('/products/')
+        response = self.client().get(
+            '/products/',
+            headers=dict(Authorization="Bearer " + access_token)
+        )
         # test return status_code\
         self.assertEqual(response.status_code, 200)
         # test data
@@ -49,13 +89,29 @@ class ProductTestCase(unittest.TestCase):
     def test_api_can_get_specific_product(self):
         """Test API can GET specific item"""
 
-        response = self.client().post('/products/', data=self.product)
+        # register and login user
+        self.create_user()
+        login_response = self.login_test_user()
+        # access_token
+        access_token = json.loads(login_response.data.decode())['access_token']
+
+        response = self.client().post(
+            '/products/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.product
+        )
+        response = self.client().post(
+            '/products/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.product
+        )
         # test the return status_code
         self.assertEqual(response.status_code, 201)
         response_data = json.loads(
             response.data.decode('utf-8').replace("'", "\""))
         result = self.client().get(
-            '/products/{}'.format(response_data['id'])
+            '/products/{}'.format(response_data['id']),
+            headers=dict(Authorization="Bearer " + access_token)
         )
         # status_code
         self.assertEqual(result.status_code, 200)
